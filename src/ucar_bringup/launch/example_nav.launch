@@ -1,0 +1,28 @@
+<launch>
+    <!-- to start up the car -->
+    <!-- however, will not start room detection and voice recognition -->
+    <!-- so that their logs can be separated from navigation nodes -->
+
+	<!-- command line flags -->
+    <!-- not used -->
+	
+    <!-- ###################################### -->
+    <!-- ##       SIMULATION                 ## -->
+    <!-- ###################################### -->
+
+    <include file="$(find gazebo_pkg)/launch/example.launch" />
+
+    <!-- ###################################### -->
+    <!-- ##       NAVIGATION STACK           ## -->
+    <!-- ###################################### -->
+
+    <!-- start navigation stack -->
+    <include file="$(find ucar_navigation)/launch/nav.launch" />
+
+    <!-- ###################################### -->
+    <!-- ##       DECISION & LOGIC           ## -->
+    <!-- ###################################### -->
+
+    <!-- not used -->
+
+</launch>
