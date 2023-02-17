@@ -1,0 +1,12 @@
+inaccessible_cost: 253
+heuristic_factor: 0.5
+goalsearch_tolerance: 0.45
+cost_weight: 1.0
+heuristic_name: "Manhattan "  #Euler, Manhattan, Chebyshev , Dialog  [default = Manhattan]
+smooth_: false
+ymovecost: 10
+xmovecost: 10
+yymovecost: 14
+xxmovecost: 14
+
+

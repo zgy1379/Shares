@@ -1,0 +1,5 @@
+<library path="lib/libpath_planner_astar">
+  <class name="path_planner_astar/PathPlannerAstar" type="path_planner_astar::PathPlannerAstar" base_class_type="nav_core::BaseGlobalPlanner">
+    <description>This is a astar global planner plugin.</description>
+  </class>
+</library>
