@@ -1,0 +1,7 @@
+<launch>
+    <node name="config_changer_node" pkg="config_changer" type="config_changer.py" output="screen">
+        <rosparam file="$(find config_changer)/config/config_changer.yaml" command="load" />
+		<param name="new_config_path" value="$(find config_changer)/config/new_param.json" />
+        <remap from="odom" to="/odom" />
+    </node>
+</launch>

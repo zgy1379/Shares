@@ -1,0 +1,29 @@
+{
+    "misc_": {
+        "no_regen_vertices": 4
+    },
+    "old_param": {
+        "/move_base/TebLocalPlannerROS": {
+            "max_vel_x": 2.8,
+            "max_vel_theta": 4.0
+        },
+        "/move_base/local_costmap": {
+            "width": 8,
+            "height": 8
+        },
+        "/move_base": {
+        }
+    },
+    "new_param": {
+        "/move_base/TebLocalPlannerROS": {
+            "max_vel_x": 2.8,
+            "max_vel_theta": 4.0
+        },
+        "/move_base/local_costmap": {
+            "width": 8,
+            "height": 8
+        },
+        "/move_base": {
+        }
+    }
+}

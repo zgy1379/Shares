@@ -1,0 +1,23 @@
+<launch>
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" clear_params="true">
+    <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+    <!-- <param name="base_global_planner" value="path_planner_astar/PathPlannerAstar" /> -->
+    <param name="base_global_planner" value="astar_planner/AstarPlanner" />
+    <!-- <param name="base_global_planner" value="RRTstar_planner/RRTstarPlannerROS" /> -->
+
+    <include file="$(find config_changer)/launch/config_changer.launch" />
+
+    <rosparam file="$(find ucar_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find ucar_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find ucar_navigation)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find ucar_navigation)/config/global_costmap_params.yaml" command="load" />
+
+    <rosparam file="$(find ucar_navigation)/config/move_base_params.yaml" command="load" />
+    <rosparam file="$(find ucar_navigation)/config/teb_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find astar_planner)/astar_param.yaml" command="load" />
+    <rosparam file="$(find rrt_star_global_planner)/params/rrt_star_planner.yaml" command="load" />
+    <rosparam file="$(find config_changer)/config/config_changer.yaml" command="load" />
+  </node>
+
+</launch>
