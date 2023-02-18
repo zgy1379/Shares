@@ -8,6 +8,23 @@ from math import sqrt
 from ros_module import ROSNavNode
 import time
 
+# 定义 ANSI 转义序列
+COLORS = {
+    "red": "\033[31m",
+    "green": "\033[32m",
+    "yellow": "\033[33m",
+    "blue": "\033[34m",
+    "magenta": "\033[35m",
+    "cyan": "\033[36m",
+    "white": "\033[37m",
+    "reset": "\033[0m"
+}
+
+
+def print_color(text, color):
+    # 输出带颜色字体的文本
+    print(COLORS[color] + text + COLORS["reset"])
+
 
 def main():
 
@@ -38,8 +55,8 @@ def main():
             vel = sqrt(pow((now_x-node.last_pose.x)*10000, 2)+pow((now_y -
                        node.last_pose.y)*10000, 2))/((timespace)*10000)
             acc = (vel-vel_begin)/timespace
-            print("velocity     = ", vel)
-            print("acceleration = ", acc)
+            print_color(f"velocity     = {vel:8.5f}", "red")
+            print_color(f"acceleration = {acc:8.5f}", "yellow")
             log_begin = time.time()
             now_x = node.last_pose.x
             now_y = node.last_pose.y
