@@ -1,12 +1,12 @@
 <launch>
 
+  <include file="$(find config_changer)/launch/config_changer.launch" />
+
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" clear_params="true">
     <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
     <!-- <param name="base_global_planner" value="path_planner_astar/PathPlannerAstar" /> -->
     <param name="base_global_planner" value="astar_planner/AstarPlanner" />
     <!-- <param name="base_global_planner" value="RRTstar_planner/RRTstarPlannerROS" /> -->
-
-    <include file="$(find config_changer)/launch/config_changer.launch" />
 
     <rosparam file="$(find ucar_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find ucar_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
