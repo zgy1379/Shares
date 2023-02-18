@@ -31,17 +31,14 @@
 #include <math.h>
 #include <stdlib.h>
 
-
 #include "rtk.h"
 
 #include "pf.h"
 #include "pf_pdf.h"
 #include "pf_kdtree.h"
 
-
 // Draw the statistics
 void pf_draw_statistics(pf_t *pf, rtk_fig_t *fig);
-
 
 // Draw the sample set
 void pf_draw_samples(pf_t *pf, rtk_fig_t *fig, int max_samples)
@@ -62,16 +59,15 @@ void pf_draw_samples(pf_t *pf, rtk_fig_t *fig, int max_samples)
     py = sample->pose.v[1];
     pa = sample->pose.v[2];
 
-    //printf("%f %f\n", px, py);
+    // printf("%f %f\n", px, py);
 
     rtk_fig_point(fig, px, py);
     rtk_fig_arrow(fig, px, py, pa, 0.1, 0.02);
-    //rtk_fig_rectangle(fig, px, py, 0, 0.1, 0.1, 0);
+    // rtk_fig_rectangle(fig, px, py, 0, 0.1, 0.1, 0);
   }
 
   return;
 }
-
 
 // Draw the hitogram (kd tree)
 void pf_draw_hist(pf_t *pf, rtk_fig_t *fig)
@@ -85,7 +81,6 @@ void pf_draw_hist(pf_t *pf, rtk_fig_t *fig)
 
   return;
 }
-
 
 // Draw the CEP statistics
 void pf_draw_cep_stats(pf_t *pf, rtk_fig_t *fig)
@@ -101,7 +96,6 @@ void pf_draw_cep_stats(pf_t *pf, rtk_fig_t *fig)
 
   return;
 }
-
 
 // Draw the cluster statistics
 void pf_draw_cluster_stats(pf_t *pf, rtk_fig_t *fig)

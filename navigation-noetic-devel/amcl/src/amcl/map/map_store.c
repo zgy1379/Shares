@@ -23,7 +23,7 @@
  * Author: Andrew Howard
  * Date: 6 Feb 2003
  * CVS: $Id: map_store.c 2951 2005-08-19 00:48:20Z gerkey $
-**************************************************************************/
+ **************************************************************************/
 
 #include <errno.h>
 #include <math.h>
@@ -32,7 +32,6 @@
 #include <string.h>
 
 #include "amcl/map/map.h"
-
 
 ////////////////////////////////////////////////////////////////////////////
 // Load an occupancy grid
@@ -54,7 +53,7 @@ int map_load_occ(map_t *map, const char *filename, double scale, int negate)
   }
 
   // Read ppm header
-  
+
   if ((fscanf(file, "%2s \n", magic) != 1) || (strcmp(magic, "P5") != 0))
   {
     fprintf(stderr, "incorrect image format; must be PGM/binary");
@@ -64,11 +63,12 @@ int map_load_occ(map_t *map, const char *filename, double scale, int negate)
 
   // Ignore comments
   while ((ch = fgetc(file)) == '#')
-    while (fgetc(file) != '\n');
+    while (fgetc(file) != '\n')
+      ;
   ungetc(ch, file);
 
   // Read image dimensions
-  if(fscanf(file, " %d %d \n %d \n", &width, &height, &depth) != 3)
+  if (fscanf(file, " %d %d \n %d \n", &width, &height, &depth) != 3)
   {
     fprintf(stderr, "Failed ot read image dimensions");
     return -1;
@@ -86,7 +86,7 @@ int map_load_occ(map_t *map, const char *filename, double scale, int negate)
   {
     if (width != map->size_x || height != map->size_y)
     {
-      //PLAYER_ERROR("map dimensions are inconsistent with prior map dimensions");
+      // PLAYER_ERROR("map dimensions are inconsistent with prior map dimensions");
       return -1;
     }
   }
@@ -126,12 +126,11 @@ int map_load_occ(map_t *map, const char *filename, double scale, int negate)
       cell->occ_state = occ;
     }
   }
-  
+
   fclose(file);
-  
+
   return 0;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////
 // Load a wifi signal strength map
@@ -204,12 +203,9 @@ int map_load_wifi(map_t *map, const char *filename, int index)
       cell->wifi_levels[index] = level;
     }
   }
-  
+
   fclose(file);
 
   return 0;
 }
 */
-
-
-

@@ -23,7 +23,7 @@
  * Author: Andrew Howard
  * Date: 18 Jan 2003
  * CVS: $Id: map_draw.c 7057 2008-10-02 00:44:06Z gbiggs $
-**************************************************************************/
+ **************************************************************************/
 
 #ifdef INCLUDE_RTKGUI
 
@@ -34,7 +34,6 @@
 
 #include <rtk.h>
 #include "amcl/map/map.h"
-
 
 ////////////////////////////////////////////////////////////////////////////
 // Draw the occupancy map
@@ -51,7 +50,7 @@ void map_draw_occ(map_t *map, rtk_fig_t *fig)
   // Draw occupancy
   for (j = 0; j < map->size_y; j++)
   {
-    for (i =  0; i < map->size_x; i++)
+    for (i = 0; i < map->size_x; i++)
     {
       cell = map->cells + MAP_INDEX(map, i, j);
       pixel = image + (j * map->size_x + i);
@@ -70,7 +69,6 @@ void map_draw_occ(map_t *map, rtk_fig_t *fig)
   return;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////
 // Draw the cspace map
 void map_draw_cspace(map_t *map, rtk_fig_t *fig)
@@ -86,7 +84,7 @@ void map_draw_cspace(map_t *map, rtk_fig_t *fig)
   // Draw occupancy
   for (j = 0; j < map->size_y; j++)
   {
-    for (i =  0; i < map->size_x; i++)
+    for (i = 0; i < map->size_x; i++)
     {
       cell = map->cells + MAP_INDEX(map, i, j);
       pixel = image + (j * map->size_x + i);
@@ -106,7 +104,6 @@ void map_draw_cspace(map_t *map, rtk_fig_t *fig)
   return;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////
 // Draw a wifi map
 void map_draw_wifi(map_t *map, rtk_fig_t *fig, int index)
@@ -123,7 +120,7 @@ void map_draw_wifi(map_t *map, rtk_fig_t *fig, int index)
   // Draw wifi levels
   for (j = 0; j < map->size_y; j++)
   {
-    for (i =  0; i < map->size_x; i++)
+    for (i = 0; i < map->size_x; i++)
     {
       cell = map->cells + MAP_INDEX(map, i, j);
       ipix = image + (j * map->size_x + i);
@@ -153,6 +150,5 @@ void map_draw_wifi(map_t *map, rtk_fig_t *fig, int index)
 
   return;
 }
-
 
 #endif
