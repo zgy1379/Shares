@@ -1,5 +1,5 @@
 fixed_frame_id: map
 check_pose_interval: 0.1
 radius: 20
-interval: 1
+interval: 0.5
 # trigger_region: [[5.5, -0.5], [5.5, 0.5], [4.7, 0.5], [4.7, -0.5]]
