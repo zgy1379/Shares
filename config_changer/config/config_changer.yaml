@@ -1,7 +1,6 @@
 fixed_frame_id: map
 check_pose_interval: 0.1
-# radius: 20
-curvity: 10
-interval: 0.5
-point_num: 3
-# trigger_region: [[5.5, -0.5], [5.5, 0.5], [4.7, 0.5], [4.7, -0.5]]
+curvity: 0.2
+interval: 0.1
+point_num: 10
+turn_delay: 2
