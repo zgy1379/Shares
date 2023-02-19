@@ -1,0 +1,113 @@
+TebLocalPlannerROS:
+#---------Robot----------机器人自身
+  #x
+  acc_lim_x: 3.0 
+  max_vel_x: 1.5 
+  max_vel_x_backwards: 0.0 
+  #y
+  acc_lim_y: 2.0
+  max_vel_y: 1.5
+  #theta
+  acc_lim_theta: 3.5 
+  max_vel_theta: 2.0 
+
+  cmd_angle_instead_rotvel: True
+
+  ##################################
+  footprint_model/type: "polygon"
+  footprint_model/radius: 0.18
+  footprint_model/line_start: [-0.1, 0.0]
+  footprint_model/line_end: [0.1, 0.0]
+  footprint_model/front_offset: 0.2
+  footprint_model/front_radius: 0.2
+  footprint_model/rear_offset: 0.2
+  footprint_model/rear_radius: 0.2
+  footprint_model/vertices:
+    [[0.17, 0.13], [0.17, -0.13], [-0.17, -0.13], [-0.17, 0.13]]
+  is_footprint_dynamic: false
+
+  #------GoalTolerance-----目标点停止容差
+  xy_goal_tolerance: 0.18
+  yaw_goal_tolerance: 0.1
+  free_goal_vel: false
+  #-------Trajectory-------轨迹调整
+
+  dt_ref: 0.3
+  dt_hysteresis: 0.03
+  min_samples: 5
+  global_plan_overwrite_orientation: true
+  ##影响全局路径的跟随
+  global_plan_viapoint_sep: 1.0
+  ##决定局部规划轨迹的最大长度
+  max_global_plan_lookahead_dist: 1.8 
+  ##检查轨迹上的参考点数
+  feasibility_check_no_poses: 3
+
+  force_reinit_new_goal_dist: 0.3
+  publish_feedback: false
+  shrink_horizon_backup: true 
+  allow_init_with_backwards_motion: false
+  exact_arc_length: false
+  shrink_horizon_min_duration: 10
+
+  ## ----- Obstacle Parameters -----
+  #优化路径轨迹与障碍物的距离
+  min_obstacle_dist: 0.18   #
+  inflation_dist: 0.1       #障碍物膨胀半径的大小
+
+  include_costmap_obstacles: true
+  costmap_obstacles_behind_robot_dist: 0.3
+  obstacle_poses_affected: 30
+  #include_dynamic_obstacles: true
+  legacy_obstacle_association: false
+  obstacle_association_force_inclusion_factor: 1.5
+  obstacle_association_cutoff_factor: 5.0
+  #插件使用
+  costmap_converter_plugin:
+    "costmap_converter::CostmapToLinesDBSRANSAC"
+    #costmap_converter_plugin: " "
+  costmap_converter_spin_thread: true
+  costmap_converter_rate: 10.0
+
+  ## ----- Optimization Parameters -----
+  #optimization_activate: True
+  #optimization_verbose: False
+  no_inner_iterations: 5
+  no_outer_iterations: 4
+  penalty_epsilon: 0.1
+  weight_max_vel_x: 2.0
+  weight_max_vel_y: 2.0
+  weight_max_vel_theta: 3.0
+  weight_acc_lim_x: 1.0
+  weight_acc_lim_y: 1.0
+  weight_acc_lim_theta: 3.0
+  ## ***** The following parameters are relevant only for holonomic robots: New in ROS kinetic *****
+  weight_kinematics_nh: 1
+  weight_kinematics_forward_drive: 1.0 #
+  weight_kinematics_turning_radius: 0.0
+  weight_optimaltime: 15 #
+  weight_obstacle: 20.0 #
+  weight_viapoint: 10
+
+  ## ----- Parallel Planning in distinctive Topologies -----
+  ##同时规划路径的条数
+  enable_homotopy_class_planning: True
+  max_number_classes: 1
+  #会有一定的好处，但会提高计算量
+  enable_multithreading: true             #多线程计算代价地图和规划路径->增加cpu和内存占用
+  selection_cost_hysteresis: 1.0          #历史代价因子
+  selection_obst_cost_scale: 100.0        #障碍物代价因子
+  selection_viapoint_cost_scale: 1.0      #中间点代价因子
+  selection_alternative_time_cost: True   #是否考虑替代路径的时间成本
+  roadmap_graph_no_samples: 100           #控制器在地图中采样点的数量
+  roadmap_graph_area_width: 6             #地图中采样点的面积宽度
+  h_signature_prescaler: 1.0              #控制H-SIGNATURE预缩放因子大小
+  h_signature_threshold: 0.1              #控制H-SIGNATURE阈值
+  obstacle_heading_threshold: 1.0         #避免过于靠近障碍物头部
+  obstacle_keypoint_offset: 0.1           #控制障碍物关键点便宜量
+  visualize_hc_graph: false               #控制可视化规划器的图形
+  viapoints_all_candidates: true          #是否考虑所有中间点
+  switching_blocking_period: 0.0          #切换到其他路径的速度
+  ## ----- Miscellaneous Paramet
+  odom_topic: "odom"
+  map_frame: "map"
