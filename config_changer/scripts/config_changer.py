@@ -14,6 +14,23 @@ import rospy
 import dynamic_reconfigure.client
 import time
 
+# 定义 ANSI 转义序列
+COLORS = {
+    "red": "\033[31m",
+    "green": "\033[32m",
+    "yellow": "\033[33m",
+    "blue": "\033[34m",
+    "magenta": "\033[35m",
+    "cyan": "\033[36m",
+    "white": "\033[37m",
+    "reset": "\033[0m"
+}
+
+
+def print_color(text, color):
+    # 输出带颜色字体的文本
+    print(COLORS[color] + text + COLORS["reset"])
+
 
 class ConfigChanger(object):
 
@@ -34,20 +51,26 @@ class ConfigChanger(object):
         self.robot_frame_id = rospy.get_param(
             "~robot_frame_id", "base_link")
         self.new_config_path = rospy.get_param(
-            "~new_config_path", "/home/ucar/17th_ros_ws/src/config_changer/config/new_param.json")
+            "~new_config_path", "/home/ulrica/catkin_ws/src/config_changer/config/new_param.json")
         self.old_config_path = rospy.get_param(
-            "~old_config_path", "/home/ucar/17th_ros_ws/src/config_changer/config/new_param.json")
-        self.radius = rospy.get_param("radius", float)
+            "~old_config_path", "/home/ulrica/catkin_ws/src/config_changer/config/new_param.json")
+        self.set_radius = rospy.get_param("radius", 0.0)
+        self.interval = rospy.get_param("interval", 0.0)
         try:
-            with open(self.new_config_path, 'r') as f:
-                text = json.loads(f.read())
-            self.new_param = text['new_param']
+            with open(self.new_config_path, 'r') as f1:
+                text1 = json.loads(f1.read())
+            self.new_param = text1['new_param']
+            with open(self.old_config_path, 'r') as f2:
+                text2 = json.loads(f2.read())
+            self.old_param = text2['old_param']
         except KeyError as e:
             print("KeyError when parseing config file: {}".format(e))
         self.rate = rospy.get_param(
             "~rate", 10)
 
+        self.now = time.time()
         self.counter = 0
+        self.list = [[0, 0], [0, 0], [0, 0]]
 
         # pt1 = Point32()
         # pt2 = Point32()
@@ -85,11 +108,20 @@ class ConfigChanger(object):
     def _get_robot_pose(self):
         # lookup tf and get robot pose in map frame
         try:
-            (self.trans, rot) = self.tf_listener.lookupTransform(
+            (trans, rot) = self.tf_listener.lookupTransform(
                 self.global_frame_id, self.robot_frame_id, rospy.Time(0))
-            self.counter += 1
-            self.position.x = self.trans[self.counter][0]
-            self.position.y = self.trans[self.counter][1]
+            if time.time() - self.now > self.interval:
+
+                # print_color(f"angle  = {self.angle:8.5f}","green")
+                print_color(f"radius = {self.radius:8.5f}","magenta")
+                
+                self.now = time.time()
+                self.counter += 1
+                self.counter %= 3
+                self.position.x = trans[0]
+                self.position.y = trans[1]
+                self.list[self.counter][0] = self.position.x
+                self.list[self.counter][1] = self.position.y
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             rospy.logwarn("tf lookup failed, may not switch config")
 
@@ -115,12 +147,12 @@ class ConfigChanger(object):
         config = client.update_configuration(
             self.old_param['/move_base/local_costmap'])
 
-    def curvature(x1, y1, x2, y2, x3, y3, self):
+    def curvature(self):
         # 计算三个点的向量
-        dx1 = x2 - x1
-        dy1 = y2 - y1
-        dx2 = x3 - x2
-        dy2 = y3 - y2
+        dx1 = self.list[1][0] - self.list[0][0]
+        dy1 = self.list[1][1] - self.list[0][1]
+        dx2 = self.list[2][0] - self.list[1][0]
+        dy2 = self.list[2][1] - self.list[1][1]
 
         # 计算向量的长度
         mag1 = math.sqrt(dx1**2 + dy1**2)
@@ -142,17 +174,17 @@ class ConfigChanger(object):
             uy2 = 0
 
         # 计算向量的夹角
-        dotprod = ux1 * ux2 + uy1 * uy2
-        angle = math.acos(dotprod)
+        dotprof = ux1 * ux2 + uy1 * uy2
+        self.angle = math.acos(dotprof)
 
         # 如果夹角为0，则曲率半径为无限大
-        if angle == 0:
+        if self.angle == 0:
             return float('inf')
 
         # 计算曲率半径
-        radius = mag1 / (2.0 * math.sin(angle / 2.0))
+        self.radius = mag1 / (2.0 * math.sin(self.angle / 2.0))
 
-        return radius < self.radius
+        return self.radius > self.set_radius
 
     def is_in_triger_region(self):
         # # check is robot in trigger region
@@ -176,8 +208,7 @@ class ConfigChanger(object):
         #         self.position.x <= x_max and \
         #         self.position.y >= y_min and \
         #         self.position.y <= y_max:
-        if self.curvature(self.trans[0][0], self.trans[0][1], self.trans[1][0],
-                          self.trans[1][1], self.trans[2][0], self.trans[2][1]):
+        if self.curvature():
             return True
         else:
             return False
@@ -189,15 +220,15 @@ def main():
     while not rospy.is_shutdown():
         # node.pub_trigger_region.publish(node.trigger_region)
         node._get_robot_pose()
-        # if not node.is_triggered:
-        if node.is_in_triger_region():
-            # node.is_triggered = True
+        if node.is_in_triger_region() & (not node.is_triggered):
+            node.is_triggered = True
             # print("robot is in trigger region")
             print("The path curve reaches a critical radius")
             print("Start to change config")
             node.update_to_new_param()
             print("Config changed")
-        else:
+        elif (not node.is_in_triger_region()) & node.is_triggered:
+            node.is_triggered = False
             print("The path curve separates from the critical radius")
             print("Start to return config")
             node.return_to_old_param()

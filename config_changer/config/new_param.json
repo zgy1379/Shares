@@ -16,12 +16,12 @@
     },
     "new_param": {
         "/move_base/TebLocalPlannerROS": {
-            "max_vel_x": 2.8,
-            "max_vel_theta": 4.0
+            "max_vel_x": 1.0,
+            "max_vel_theta": 2.0
         },
         "/move_base/local_costmap": {
-            "width": 8,
-            "height": 8
+            "width": 2,
+            "height": 2
         },
         "/move_base": {
         }
