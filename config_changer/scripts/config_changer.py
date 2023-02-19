@@ -55,10 +55,10 @@ class ConfigChanger(object):
             "~new_config_path", "/home/ulrica/catkin_ws/src/config_changer/config/new_param.json")
         self.old_config_path = rospy.get_param(
             "~old_config_path", "/home/ulrica/catkin_ws/src/config_changer/config/new_param.json")
-        # self.set_radius = rospy.get_param("~radius", default=0.0)
         self.set_curvity = rospy.get_param("~curvity", default=0.0)
         self.interval = rospy.get_param("~interval", default=0.0)
         self.point_num = rospy.get_param("~point_num", default=0)
+        self.turn_delay = rospy.get_param("~turn_delay", default=0.0)
         try:
             with open(self.new_config_path, 'r') as f1:
                 text1 = json.loads(f1.read())
@@ -75,8 +75,10 @@ class ConfigChanger(object):
         self.counter = 0
         self.list = [[0.0, 0.0] for i in range(self.point_num)]
         self.curvity = 0.0
+        self.delay = 0.0
 
         self.tf_listener = tf.TransformListener()
+        np.seterr(all='ignore')
 
     def _get_robot_pose(self):
         # lookup tf and get robot pose in map frame
@@ -85,9 +87,13 @@ class ConfigChanger(object):
                 self.global_frame_id, self.robot_frame_id, rospy.Time(0))
             if (time.time() - self.now) > self.interval:
 
-                # print_color(f"now    = {self.now:8.5f}", "green")
-                print_color(f"curvity = {self.curvity:8.5f}", "magenta")
+                print_color(f"curvity = {self.curvity:8.5f}", "green")
 
+                if self.delay > 0:
+                    self.delay -= (time.time() - self.now)
+                    print_color(f"delay = {self.delay:8.5f}", "blue")
+                elif self.delay < 0:
+                    self.delay = 0.0
                 self.now = time.time()
                 self.counter += 1
                 self.counter %= self.point_num
@@ -119,45 +125,6 @@ class ConfigChanger(object):
             '/move_base/local_costmap')
         config = client.update_configuration(
             self.old_param['/move_base/local_costmap'])
-
-    # def curvature(self):
-    #     # 计算三个点的向量
-    #     dx1 = self.list[1][0] - self.list[0][0]
-    #     dy1 = self.list[1][1] - self.list[0][1]
-    #     dx2 = self.list[2][0] - self.list[1][0]
-    #     dy2 = self.list[2][1] - self.list[1][1]
-
-    #     # 计算向量的长度
-    #     mag1 = math.sqrt(dx1**2 + dy1**2)
-    #     mag2 = math.sqrt(dx2**2 + dy2**2)
-
-    #     # 计算向量的单位向量
-    #     if mag1 != 0:
-    #         ux1 = dx1 / mag1
-    #         uy1 = dy1 / mag1
-    #     else:
-    #         ux1 = 0
-    #         uy1 = 0
-
-    #     if mag2 != 0:
-    #         ux2 = dx2 / mag2
-    #         uy2 = dy2 / mag2
-    #     else:
-    #         ux2 = 0
-    #         uy2 = 0
-
-    #     # 计算向量的夹角
-    #     dotprof = ux1 * ux2 + uy1 * uy2
-    #     angle = math.acos(dotprof)
-
-    #     # 如果夹角为0，则曲率半径为无限大
-    #     if angle == 0:
-    #         return float('inf')
-
-    #     # 计算曲率半径
-    #     self.radius = mag1 / (2.0 * math.sin(angle / 2.0))
-
-    #     return self.radius > self.set_radius
 
     def check_curve(self):
 
@@ -204,7 +171,6 @@ class ConfigChanger(object):
             return False
 
     def is_in_triger_region(self):
-        # if self.curvature():
         if self.check_curve():
             return True
         else:
@@ -215,21 +181,21 @@ def main():
     node = ConfigChanger()
     rate = rospy.Rate(node.rate)
     while not rospy.is_shutdown():
-        # node.pub_trigger_region.publish(node.trigger_region)
         node._get_robot_pose()
         if node.is_in_triger_region() & (not node.is_triggered):
             node.is_triggered = True
-            # print("robot is in trigger region")
-            print("The path curve reaches a critical radius")
-            print("Start to change config")
+            print_color("The path curve reaches a critical radius", "red")
+            print_color("Start to change config", "red")
             node.update_to_new_param()
-            print("Config changed")
-        elif (not node.is_in_triger_region()) & node.is_triggered:
+            print_color("Config changed", "red")
+            node.delay = node.turn_delay
+        elif (not node.is_in_triger_region()) & node.is_triggered & (not node.delay):
             node.is_triggered = False
-            print("The path curve separates from the critical radius")
-            print("Start to return config")
+            print_color(
+                "The path curve separates from the critical radius", "magenta")
+            print_color("Start to return config", "magenta")
             node.return_to_old_param()
-            print("Config returned")
+            print_color("Config returned", "magenta")
         rate.sleep()
 
 
