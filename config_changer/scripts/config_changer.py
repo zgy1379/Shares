@@ -13,6 +13,7 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 import rospy
 import dynamic_reconfigure.client
 import time
+import numpy as np
 
 # 定义 ANSI 转义序列
 COLORS = {
@@ -54,8 +55,10 @@ class ConfigChanger(object):
             "~new_config_path", "/home/ulrica/catkin_ws/src/config_changer/config/new_param.json")
         self.old_config_path = rospy.get_param(
             "~old_config_path", "/home/ulrica/catkin_ws/src/config_changer/config/new_param.json")
-        self.set_radius = rospy.get_param("~radius", default=0.0)
+        # self.set_radius = rospy.get_param("~radius", default=0.0)
+        self.set_curvity = rospy.get_param("~curvity", default=0.0)
         self.interval = rospy.get_param("~interval", default=0.0)
+        self.point_num = rospy.get_param("~point_num", default=0)
         try:
             with open(self.new_config_path, 'r') as f1:
                 text1 = json.loads(f1.read())
@@ -70,7 +73,8 @@ class ConfigChanger(object):
 
         self.now = time.time()
         self.counter = 0
-        self.list = [[0, 0], [0, 0], [0, 0]]
+        self.list = [[0.0, 0.0] for i in range(self.point_num)]
+        self.curvity = 0.0
 
         self.tf_listener = tf.TransformListener()
 
@@ -82,11 +86,11 @@ class ConfigChanger(object):
             if (time.time() - self.now) > self.interval:
 
                 # print_color(f"now    = {self.now:8.5f}", "green")
-                print_color(f"radius = {self.radius:8.5f}", "magenta")
+                print_color(f"curvity = {self.curvity:8.5f}", "magenta")
 
                 self.now = time.time()
                 self.counter += 1
-                self.counter %= 3
+                self.counter %= self.point_num
                 self.position.x = trans[0]
                 self.position.y = trans[1]
                 self.list[self.counter][0] = self.position.x
@@ -116,47 +120,92 @@ class ConfigChanger(object):
         config = client.update_configuration(
             self.old_param['/move_base/local_costmap'])
 
-    def curvature(self):
-        # 计算三个点的向量
-        dx1 = self.list[1][0] - self.list[0][0]
-        dy1 = self.list[1][1] - self.list[0][1]
-        dx2 = self.list[2][0] - self.list[1][0]
-        dy2 = self.list[2][1] - self.list[1][1]
+    # def curvature(self):
+    #     # 计算三个点的向量
+    #     dx1 = self.list[1][0] - self.list[0][0]
+    #     dy1 = self.list[1][1] - self.list[0][1]
+    #     dx2 = self.list[2][0] - self.list[1][0]
+    #     dy2 = self.list[2][1] - self.list[1][1]
 
-        # 计算向量的长度
-        mag1 = math.sqrt(dx1**2 + dy1**2)
-        mag2 = math.sqrt(dx2**2 + dy2**2)
+    #     # 计算向量的长度
+    #     mag1 = math.sqrt(dx1**2 + dy1**2)
+    #     mag2 = math.sqrt(dx2**2 + dy2**2)
 
-        # 计算向量的单位向量
-        if mag1 != 0:
-            ux1 = dx1 / mag1
-            uy1 = dy1 / mag1
+    #     # 计算向量的单位向量
+    #     if mag1 != 0:
+    #         ux1 = dx1 / mag1
+    #         uy1 = dy1 / mag1
+    #     else:
+    #         ux1 = 0
+    #         uy1 = 0
+
+    #     if mag2 != 0:
+    #         ux2 = dx2 / mag2
+    #         uy2 = dy2 / mag2
+    #     else:
+    #         ux2 = 0
+    #         uy2 = 0
+
+    #     # 计算向量的夹角
+    #     dotprof = ux1 * ux2 + uy1 * uy2
+    #     angle = math.acos(dotprof)
+
+    #     # 如果夹角为0，则曲率半径为无限大
+    #     if angle == 0:
+    #         return float('inf')
+
+    #     # 计算曲率半径
+    #     self.radius = mag1 / (2.0 * math.sin(angle / 2.0))
+
+    #     return self.radius > self.set_radius
+
+    def check_curve(self):
+
+        coords_list = self.list
+        degree = 2
+        curvity = self.set_curvity
+        """
+        用二维坐标拟合多项式并计算曲率
+
+        参数：
+        coords_list：包含二维坐标的列表，形如[[x1, y1], [x2, y2], ..., [xn, yn]]
+        degree：多项式的阶数
+        curvity：曲率阈值，当曲率大于该值时，返回True
+
+        返回：
+        True或False，表示曲线是否弯曲程度大于曲率阈值
+        """
+        # 将坐标列表转换为NumPy数组
+        data = np.array(coords_list)
+
+        # 检查列表是否全空
+        check = False
+        for i in data[:, 1]:
+            if i != 0:
+                check = True
+        if check == False:
+            return False
+
+        # 多项式回归拟合
+        x = data[:, 0]
+        y = data[:, 1]
+        p = np.polyfit(x, y, degree)
+
+        # 计算拟合曲线的曲率
+        dp = np.polyder(p)
+        ddp = np.polyder(dp)
+        k = np.abs(ddp) / np.power(1 + np.power(dp, 2), 1.5)
+
+        # 判断曲率是否大于曲率阈值
+        self.curvity = np.max(k)
+        if self.curvity > curvity:
+            return True
         else:
-            ux1 = 0
-            uy1 = 0
-
-        if mag2 != 0:
-            ux2 = dx2 / mag2
-            uy2 = dy2 / mag2
-        else:
-            ux2 = 0
-            uy2 = 0
-
-        # 计算向量的夹角
-        dotprof = ux1 * ux2 + uy1 * uy2
-        angle = math.acos(dotprof)
-
-        # 如果夹角为0，则曲率半径为无限大
-        if angle == 0:
-            return float('inf')
-
-        # 计算曲率半径
-        self.radius = mag1 / (2.0 * math.sin(angle / 2.0))
-
-        return self.radius > self.set_radius
+            return False
 
     def is_in_triger_region(self):
-        if self.curvature():
+        # if self.curvature():
+        if self.check_curve():
             return True
         else:
             return False
