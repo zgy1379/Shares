@@ -54,8 +54,8 @@ class ConfigChanger(object):
             "~new_config_path", "/home/ulrica/catkin_ws/src/config_changer/config/new_param.json")
         self.old_config_path = rospy.get_param(
             "~old_config_path", "/home/ulrica/catkin_ws/src/config_changer/config/new_param.json")
-        self.set_radius = rospy.get_param("radius", 0.0)
-        self.interval = rospy.get_param("interval", 0.0)
+        self.set_radius = rospy.get_param("~radius", default=0.0)
+        self.interval = rospy.get_param("~interval", default=0.0)
         try:
             with open(self.new_config_path, 'r') as f1:
                 text1 = json.loads(f1.read())
@@ -72,49 +72,18 @@ class ConfigChanger(object):
         self.counter = 0
         self.list = [[0, 0], [0, 0], [0, 0]]
 
-        # pt1 = Point32()
-        # pt2 = Point32()
-        # pt3 = Point32()
-        # pt4 = Point32()
-
-        # pt1.x = rospy.get_param(
-        #     "~trigger_region", [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])[0][0]
-        # pt1.y = rospy.get_param(
-        #     "~trigger_region", [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])[0][1]
-        # pt2.x = rospy.get_param(
-        #     "~trigger_region", [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])[1][0]
-        # pt2.y = rospy.get_param(
-        #     "~trigger_region", [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])[1][1]
-        # pt3.x = rospy.get_param(
-        #     "~trigger_region", [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])[2][0]
-        # pt3.y = rospy.get_param(
-        #     "~trigger_region", [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])[2][1]
-        # pt4.x = rospy.get_param(
-        #     "~trigger_region", [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])[3][0]
-        # pt4.y = rospy.get_param(
-        #     "~trigger_region", [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])[3][1]
-
-        # self.trigger_region.header.frame_id = self.global_frame_id
-        # self.trigger_region.polygon.points.append(pt1)
-        # self.trigger_region.polygon.points.append(pt2)
-        # self.trigger_region.polygon.points.append(pt3)
-        # self.trigger_region.polygon.points.append(pt4)
-
-        # ROS Infastructure
         self.tf_listener = tf.TransformListener()
-        # self.pub_trigger_region = rospy.Publisher(
-        #     "trigger_region", PolygonStamped, queue_size=1)
 
     def _get_robot_pose(self):
         # lookup tf and get robot pose in map frame
         try:
             (trans, rot) = self.tf_listener.lookupTransform(
                 self.global_frame_id, self.robot_frame_id, rospy.Time(0))
-            if time.time() - self.now > self.interval:
+            if (time.time() - self.now) > self.interval:
 
-                # print_color(f"angle  = {self.angle:8.5f}","green")
-                print_color(f"radius = {self.radius:8.5f}","magenta")
-                
+                # print_color(f"now    = {self.now:8.5f}", "green")
+                print_color(f"radius = {self.radius:8.5f}", "magenta")
+
                 self.now = time.time()
                 self.counter += 1
                 self.counter %= 3
@@ -175,39 +144,18 @@ class ConfigChanger(object):
 
         # 计算向量的夹角
         dotprof = ux1 * ux2 + uy1 * uy2
-        self.angle = math.acos(dotprof)
+        angle = math.acos(dotprof)
 
         # 如果夹角为0，则曲率半径为无限大
-        if self.angle == 0:
+        if angle == 0:
             return float('inf')
 
         # 计算曲率半径
-        self.radius = mag1 / (2.0 * math.sin(self.angle / 2.0))
+        self.radius = mag1 / (2.0 * math.sin(angle / 2.0))
 
         return self.radius > self.set_radius
 
     def is_in_triger_region(self):
-        # # check is robot in trigger region
-        # x_min = self.trigger_region.polygon.points[0].x
-        # x_max = self.trigger_region.polygon.points[0].x
-        # y_min = self.trigger_region.polygon.points[0].y
-        # y_max = self.trigger_region.polygon.points[0].y
-        # # find the x_min, y_min, x_max, y_max of the trigger region
-        # for point in self.trigger_region.polygon.points:
-        #     if point.x < x_min:
-        #         x_min = point.x
-        #     if point.x > x_max:
-        #         x_max = point.x
-        #     if point.y < y_min:
-        #         y_min = point.y
-        #     if point.y > y_max:
-        #         y_max = point.y
-
-        # # check is robot in trigger region
-        # if self.position.x >= x_min and \
-        #         self.position.x <= x_max and \
-        #         self.position.y >= y_min and \
-        #         self.position.y <= y_max:
         if self.curvature():
             return True
         else:
