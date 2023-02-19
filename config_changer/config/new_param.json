@@ -4,24 +4,26 @@
     },
     "old_param": {
         "/move_base/TebLocalPlannerROS": {
-            "max_vel_x": 2.8,
-            "max_vel_theta": 4.0
+            "max_vel_x": 1.5,
+            "max_vel_theta": 2.0,
+            "dt_ref":0.2
         },
         "/move_base/local_costmap": {
-            "width": 8,
-            "height": 8
+            "width": 2.5,
+            "height": 2.5
         },
         "/move_base": {
         }
     },
     "new_param": {
         "/move_base/TebLocalPlannerROS": {
-            "max_vel_x": 1.0,
-            "max_vel_theta": 2.0
+            "max_vel_x": 0.5,
+            "max_vel_theta": 1.0,
+            "dt_ref":0.1
         },
         "/move_base/local_costmap": {
-            "width": 2,
-            "height": 2
+            "width": 2.5,
+            "height": 2.5
         },
         "/move_base": {
         }
