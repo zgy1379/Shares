@@ -1,6 +1,6 @@
 fixed_frame_id: map
 check_pose_interval: 0.1
-curvity: 0.2
+curvity: 0.005
 interval: 0.1
 point_num: 10
 turn_delay: 2
