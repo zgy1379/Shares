@@ -165,7 +165,7 @@ class ConfigChanger(object):
 
         # 判断曲率是否大于曲率阈值
         self.curvity = np.max(k)
-        if self.curvity > curvity:
+        if 0.0001 < self.curvity < curvity:
             return True
         else:
             return False
